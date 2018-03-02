@@ -176,3 +176,8 @@ doc/
 
 # Box storage for spec
 test/vagrant-spec/boxes/*.box
+
+
+# Specifics
+/release
+ssl/*
