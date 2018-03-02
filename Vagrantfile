@@ -27,8 +27,8 @@ end
 
 CONTROLLER_CLUSTER_IP         = "10.3.0.1"
 ETCD_CLOUD_CONFIG_PATH        = File.expand_path("etcd-cloud-config.yaml")
-CONTROLLER_CLOUD_CONFIG_PATH  = File.expand_path("lib/controller-install.sh")
-WORKER_CLOUD_CONFIG_PATH      = File.expand_path("lib/worker-install.sh")
+CONTROLLER_CLOUD_CONFIG_PATH  = File.expand_path("lib/generic/controller-install.sh")
+WORKER_CLOUD_CONFIG_PATH      = File.expand_path("lib/generic/worker-install.sh")
 
 def etcdIP(num)
   return "172.17.4.#{num+50}"
@@ -48,7 +48,7 @@ initial_etcd_cluster          = etcdIPs.map.with_index{ |ip, i| "e#{i+1}=http://
 etcd_endpoints                = etcdIPs.map.with_index{ |ip, i| "http://#{ip}:2379" }.join(",")
 
 # Generate root CA
-system("mkdir -p ssl && ./lib/init-ssl-ca.sh ssl") or abort ("failed generating SSL artifacts")
+system("mkdir -p ssl && ./lib/ssl/init-ssl-ca.sh ssl") or abort ("failed generating SSL artifacts")
 
 # Generate admin key/cert
 system("./lib/init-ssl.sh ssl admin kube-admin") or abort("failed generating admin SSL artifacts")
@@ -57,7 +57,7 @@ def provisionMachineSSL(machine,certBaseName,cn,ipAddrs)
   tarFile   = "ssl/#{cn}.tar"
   ipString  = ipAddrs.map.with_index { |ip, i| "IP.#{i+1}=#{ip}"}.join(",")
 
-  system("./lib/init-ssl.sh ssl #{certBaseName} #{cn} #{ipString}") or abort("failed generating #{cn} SSL artifacts")
+  system("./lib/ssl/init-ssl.sh ssl #{certBaseName} #{cn} #{ipString}") or abort("failed generating #{cn} SSL artifacts")
 
   machine.vm.provision :file,
     :source       => tarFile,
