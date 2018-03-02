@@ -27,8 +27,8 @@ end
 
 CONTROLLER_CLUSTER_IP         = "10.3.0.1"
 ETCD_CLOUD_CONFIG_PATH        = File.expand_path("etcd-cloud-config.yaml")
-CONTROLLER_CLOUD_CONFIG_PATH  = File.expand_path("../generic/controller-install.sh")
-WORKER_CLOUD_CONFIG_PATH      = File.expand_path("../generic/worker-install.sh")
+CONTROLLER_CLOUD_CONFIG_PATH  = File.expand_path("lib/controller-install.sh")
+WORKER_CLOUD_CONFIG_PATH      = File.expand_path("lib/worker-install.sh")
 
 def etcdIP(num)
   return "172.17.4.#{num+50}"
@@ -68,15 +68,15 @@ end
 
 Vagrant.configure("2") do |config|
   # always use Vagrant's insecure key
-  config.ssh.insert_key = false
+  config.ssh.insert_key     = false
 
   config.vm.box = "coreos-%s" % $update_channel
-  config.vm.box_version = ">= 1151.0.0"
-  config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
+  config.vm.box_version     = ">= 1151.0.0"
+  config.vm.box_url         = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
 
   ["vmware_fusion", "vmware_workstation"].each do |vmware|
     config.vm.provider vmware do |v, override|
-      override.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json" % $update_channel
+      override.vm.box_url   = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json" % $update_channel
     end
   end
 
@@ -123,13 +123,18 @@ Vagrant.configure("2") do |config|
       end
 
       etcd.vm.provider :virtualbox do |vb|
-        vb.memory = $etcd_vm_memory
+        vb.memory     = $etcd_vm_memory
       end
 
       etcd.vm.network :private_network, ip: etcdIP(i)
 
-      etcd.vm.provision :file, :source => etcd_config_file.path, :destination => "/tmp/vagrantfile-user-data"
-      etcd.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
+      etcd.vm.provision :file,
+        :source       => etcd_config_file.path,
+        :destination  => "/tmp/vagrantfile-user-data"
+
+      etcd.vm.provision :shell,
+        :inline       => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/",
+        :privileged   => true
     end
   end
 
